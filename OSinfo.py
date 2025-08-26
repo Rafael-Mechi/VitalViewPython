@@ -7,7 +7,7 @@ system_info = platform.uname()
 CSV_PATH = "dados_OS.csv"
 arquivo_existe = os.path.exists(CSV_PATH)
 
-marca = """
+wtrmark = """
 __     ___ _        _  __     ___               
 \ \   / (_) |_ __ _| | \ \   / (_) _____      __
  \ \ / /| | __/ _` | |  \ \ / /| |/ _ \ \ /\ / /
@@ -15,7 +15,7 @@ __     ___ _        _  __     ___
    \_/  |_|\__\__,_|_|    \_/  |_|\___| \_/\_/  
 """
 
-print(marca)
+print(wtrmark)
 
 print(f"OS: {system_info.system}")
 print(f"User & Device: {system_info.node}")
