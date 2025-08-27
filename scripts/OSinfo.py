@@ -4,7 +4,7 @@ import pandas as pd
 
 system_info = platform.uname()
 
-CSV_PATH = "dados_OS.csv"
+CSV_PATH = "../data/dados_OS.csv"
 arquivo_existe = os.path.exists(CSV_PATH)
 
 wtrmark = """

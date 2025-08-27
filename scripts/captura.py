@@ -4,7 +4,7 @@ import pandas as pd
 import time
 from psutil._common import bytes2human
 
-file = 'machine_data.csv'
+file = '../data/machine_data.csv'
 
 while True:
     cpu_percent = ps.cpu_percent(interval=0.1, percpu=False)
@@ -17,7 +17,10 @@ while True:
     disk_percent = disk.percent
     disk_avl = bytes2human(disk.free)
 
+    timestamp = datetime.now()
+
     new_row = pd.DataFrame({
+        'timestamp': [timestamp],
         'cpu_percent': [cpu_percent],
         'memory_percent': [mem_percent],
         'memory_available': [mem_avl],
@@ -35,4 +38,4 @@ while True:
         new_row.to_csv(file, sep=';', encoding='utf-8', index=False)
 
 
-    time.sleep(1)
+    time.sleep(10)
