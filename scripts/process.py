@@ -41,4 +41,4 @@ while True:
             os.mkdir(DATA_PATH)
             dados.to_csv(CSV_PATH, mode="a", index=False, sep=";", header=False)
 
-    time.sleep(3)
+    time.sleep(10)
