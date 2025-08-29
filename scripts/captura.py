@@ -2,9 +2,11 @@ from datetime import datetime
 import psutil as ps
 import pandas as pd
 import time
+import os
 from psutil._common import bytes2human
 
-file = '../data/machine_data.csv'
+DATA_PATH = '../data'
+CSV_PATH = '../data/machine_data.csv'
 
 while True:
     cpu_percent = ps.cpu_percent(interval=0.1, percpu=False)
@@ -30,12 +32,13 @@ while True:
 
     print(new_row)
 
-    try:
-        df = pd.read_csv(file, sep=';')
-        df = pd.concat([df, new_row], ignore_index=True)
-        df.to_csv(file, sep=';', encoding='utf-8', index=False)
-    except:
-        new_row.to_csv(file, sep=';', encoding='utf-8', index=False)
+    if os.path.exists(DATA_PATH):
+        new_row.to_csv(CSV_PATH, mode="a", sep=';', encoding='utf-8', index=False, header=False)
+    else:
+        os.mkdir(DATA_PATH)
+        new_row.to_csv(CSV_PATH, mode="a", sep=';', encoding='utf-8', index=False, header=False)
 
 
-    time.sleep(10)
+
+        
+    time.sleep(1)

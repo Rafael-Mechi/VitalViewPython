@@ -4,8 +4,8 @@ import os
 import time
 from datetime import datetime
 
+DATA_PATH = "../data"
 CSV_PATH = "../data/process_data.csv"
-arquivo_existe = os.path.exists(CSV_PATH)
 
 wtrmark = """
 __     ___ _        _  __     ___               
@@ -34,8 +34,11 @@ while True:
             "pid": pid,
             "memory_percent": memoryPercent
         }])
+        
+        if os.path.exists(DATA_PATH):
+            dados.to_csv(CSV_PATH, mode="a", index=False, sep=";", header=False)
+        else:
+            os.mkdir(DATA_PATH)
+            dados.to_csv(CSV_PATH, mode="a", index=False, sep=";", header=False)
 
-        dados.to_csv(CSV_PATH, mode='a', header=not arquivo_existe, index=False, sep=';')
-        arquivo_existe = True
-
-    time.sleep(10)
+    time.sleep(3)

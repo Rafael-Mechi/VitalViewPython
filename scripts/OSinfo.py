@@ -4,8 +4,8 @@ import pandas as pd
 
 system_info = platform.uname()
 
+DATA_PATH = "../data"
 CSV_PATH = "../data/dados_OS.csv"
-arquivo_existe = os.path.exists(CSV_PATH)
 
 wtrmark = """
 __     ___ _        _  __     ___               
@@ -29,5 +29,8 @@ dados = pd.DataFrame([{
         "Machine": system_info.machine
     }])
 
-dados.to_csv(CSV_PATH, mode='a', header=not arquivo_existe, index=False, sep=';')
-arquivo_existe = True
+if os.path.exists(DATA_PATH):
+    dados.to_csv(CSV_PATH, sep=';', encoding='utf-8', index=False)
+else:
+    os.mkdir(DATA_PATH)
+    dados.to_csv(CSV_PATH, sep=';', encoding='utf-8', index=False)
