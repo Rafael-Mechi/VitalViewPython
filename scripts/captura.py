@@ -17,7 +17,7 @@ while True:
     mem_percent = mem.percent
     mem_avl = bytes2human(mem.available)
     
-    disk = ps.disk_usage('C:\\')
+    disk = ps.disk_usage('/')
     disk_percent = disk.percent
     disk_avl = bytes2human(disk.free)
 
