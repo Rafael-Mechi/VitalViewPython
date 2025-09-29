@@ -2,6 +2,7 @@ import psutil
 import pandas as pd
 import os
 import time
+import socket
 from datetime import datetime
 from psutil._common import bytes2human
 
@@ -36,8 +37,10 @@ try:
                                     if info.get('create_time') else ""
                 memory_human = bytes2human(proc.memory_info().rss)
                 cpu_usage = proc.cpu_percent(interval=0.1)
+                hostname = socket.gethostname()
 
                 linhas.append({
+                    "Nome da Maquina": hostname,
                     "Data da Coleta": timestamp,
                     "Usuario": info.get('username'),
                     "Processo": info.get('name'),
