@@ -4,12 +4,21 @@ import os
 import time
 import socket
 from datetime import datetime
+import boto3
+
 
 # ------------------------ Configuração básica ------------------------ #
 CAMINHO_DADOS = "data"
 CAMINHO_CSV = "data/process_data.csv"
 INTERVALO_SEGUNDOS = 2
 os.makedirs(CAMINHO_DADOS, exist_ok=True)
+s3 = boto3.client('s3')
+
+
+bucket = "bucket-raw-2025-10-23-9773"
+arquivo_local = "data/process_data.csv"
+destino_s3 = "process_data.csv"
+
 
 # -------------------------- Funções utilitárias -------------------------- #
 # Média de carga (load average): l1, l5, l15 indicam a média de tarefas
@@ -159,6 +168,8 @@ try:
         else:
             df.to_csv(CAMINHO_CSV, mode="w", sep=";", encoding="utf-8", index=False, header=True)
 
+        s3.upload_file(arquivo_local, bucket, destino_s3)
+        print("✅ Upload concluído com sucesso!")
         time.sleep(INTERVALO_SEGUNDOS)
 
 except KeyboardInterrupt:
