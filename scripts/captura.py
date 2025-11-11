@@ -44,7 +44,7 @@ def obter_temperatura_cpu_c():
                 return float(leituras[0].current)
     except Exception:
         pass
-    return None  
+    return None
 
 
 try:
