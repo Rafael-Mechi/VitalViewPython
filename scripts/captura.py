@@ -47,6 +47,11 @@ def obter_temperatura_cpu_c():
     return None
 
 
+# Lógica para calcular a taxa de transferência (leitura e escrita de disco)
+# 1) Pegar o snapshot acumulado anterior (contadores desde o boot)
+io_anterior = psutil.disk_io_counters()
+
+
 try:
     while True:
         linhas = []
@@ -76,6 +81,16 @@ try:
         disco_total_b = int(disco.total)
         disco_usado_b = int(disco.used)
         disco_livre_b = int(disco.free)
+        io_atual = psutil.disk_io_counters()  # 2) pegar o atual
+        # 3) Fazer a diferença entre atual e anterior (em MB)
+        leitura_mb = float(io_atual.read_bytes - io_anterior.read_bytes) / (1024 * 1024)
+        escrita_mb = float(io_atual.write_bytes - io_anterior.write_bytes) / (1024 * 1024)
+        taxa_leitura = leitura_mb / INTERVALO_SEGUNDOS
+        taxa_escrita = escrita_mb / INTERVALO_SEGUNDOS
+        io_anterior = io_atual #Atualiza o antigo para pegar na proxima captura
+        print(f"Leitura: {taxa_leitura:.2f} MB/s | Escrita: {taxa_escrita:.2f} MB/s")
+        
+
 
         # Estatísticas de rede acumuladas desde o boot.
         rede = psutil.net_io_counters()
@@ -134,8 +149,10 @@ try:
 
                     'Uso de Disco': uso_disco,
                     'Disco total (bytes)': disco_total_b,
-                    'Disco usado (bytes)': disco_usado_b,
-                    'Disco livre (bytes)': disco_livre_b,
+                    'Disco usado (bytes)': round(disco_usado_b, 2),
+                    'Disco livre (bytes)': round(disco_livre_b, 2),
+                    'Taxa leitura (MB)': taxa_leitura,
+                    'Taxa Escrita (MB)': taxa_escrita,
 
                     'Net bytes enviados': rede_enviada_b,
                     'Net bytes recebidos': rede_recebida_b,
