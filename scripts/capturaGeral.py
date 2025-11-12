@@ -81,6 +81,10 @@ def ping_perda_e_rtt(host="8.8.8.8", count=4):
 prev_rx = prev_tx = prev_prx = prev_ptx = None
 prev_t = None
 
+# Inicializa disco anterior e intervalo
+io_anterior = psutil.disk_io_counters()
+INTERVALO_SEGUNDOS = 2
+
 
 try:
     while True:
@@ -93,6 +97,28 @@ try:
         mem_percent = mem.percent
         disk = psutil.disk_usage('/')
         disk_percent = disk.percent
+        
+        # --- Disco ---
+        io_atual = psutil.disk_io_counters()
+
+        # Taxa de transferência
+        leitura_mb = float(io_atual.read_bytes - io_anterior.read_bytes) / (1024 * 1024)
+        escrita_mb = float(io_atual.write_bytes - io_anterior.write_bytes) / (1024 * 1024)
+        taxa_leitura = leitura_mb / INTERVALO_SEGUNDOS
+        taxa_escrita = escrita_mb / INTERVALO_SEGUNDOS
+
+        # Latência média
+        total_leitura = io_atual.read_count - io_anterior.read_count
+        tempo_leitura = io_atual.read_time - io_anterior.read_time
+        total_escrita = io_atual.write_count - io_anterior.write_count
+        tempo_escrita = io_atual.write_time - io_anterior.write_time
+
+        latencia_leitura = (tempo_leitura / total_leitura) if total_leitura > 0 else 0
+        latencia_escrita = (tempo_escrita / total_escrita) if total_escrita > 0 else 0
+
+        # Atualiza o snapshot anterior
+        io_anterior = io_atual
+
 
         #Rede
         # acumulados
@@ -137,6 +163,10 @@ try:
                     'Uso de CPU': cpu_percent,
                     'Uso de RAM': mem_percent,
                     'Uso de Disco': disk_percent,
+                    "Taxa leitura (MB/s)": taxa_leitura,
+                    "Taxa escrita (MB/s)": taxa_escrita,
+                    "Latência leitura (ms)": latencia_leitura,
+                    "Latência escrita (ms)": latencia_escrita,
                     "Uso de Threads": info.get('num_threads'),
                     "Quando foi iniciado": create_time_human,
                     "Status": info.get('status'),

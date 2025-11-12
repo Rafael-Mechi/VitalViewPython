@@ -47,9 +47,6 @@ def obter_temperatura_cpu_c():
     return None
 
 
-# Lógica para calcular a taxa de transferência (leitura e escrita de disco)
-# 1) Pegar o snapshot acumulado anterior (contadores desde o boot)
-io_anterior = psutil.disk_io_counters()
 
 
 try:
@@ -75,37 +72,14 @@ try:
         swap_total_b = int(swap.total)
         swap_usada_b = int(swap.used)
 
-        # --- Disco --- #
+        # ------- Disco ------- #
         disco = psutil.disk_usage('/')
         uso_disco = disco.percent
         disco_total_b = int(disco.total)
         disco_usado_b = int(disco.used)
         disco_livre_b = int(disco.free)
 
-        io_atual = psutil.disk_io_counters() #captura atual
-
-        # Taxa de transferência
-        leitura_mb = float(io_atual.read_bytes - io_anterior.read_bytes) / (1024 * 1024)
-        escrita_mb = float(io_atual.write_bytes - io_anterior.write_bytes) / (1024 * 1024)
-        taxa_leitura = leitura_mb / INTERVALO_SEGUNDOS
-        taxa_escrita = escrita_mb / INTERVALO_SEGUNDOS
-
-        # Latência média 
-        total_leitura = io_atual.read_count - io_anterior.read_count
-        tempo_leitura = io_atual.read_time - io_anterior.read_time
-        total_escrita = io_atual.write_count - io_anterior.write_count
-        tempo_escrita = io_atual.write_time - io_anterior.write_time
-
-        latencia_leitura = (tempo_leitura / total_leitura) if total_leitura > 0 else 0
-        latencia_escrita = (tempo_escrita / total_escrita) if total_escrita > 0 else 0
-
-        # Atualiza a captura anterior como a atual
-        io_anterior = io_atual
-
-
-        
-
-
+    
         # Estatísticas de rede acumuladas desde o boot.
         rede = psutil.net_io_counters()
         rede_enviada_b = int(rede.bytes_sent)
@@ -165,11 +139,6 @@ try:
                     'Disco total (bytes)': disco_total_b,
                     'Disco usado (bytes)': round(disco_usado_b, 2),
                     'Disco livre (bytes)': round(disco_livre_b, 2),
-                    'Taxa leitura (MB)': taxa_leitura,
-                    'Taxa Escrita (MB)': taxa_escrita,
-                    "Latência leitura (ms)": latencia_leitura,
-                    'Latência escrita (ms)': latencia_escrita,
-
                     'Net bytes enviados': rede_enviada_b,
                     'Net bytes recebidos': rede_recebida_b,
 
