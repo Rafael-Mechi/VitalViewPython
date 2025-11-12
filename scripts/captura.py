@@ -75,20 +75,34 @@ try:
         swap_total_b = int(swap.total)
         swap_usada_b = int(swap.used)
 
-        # Disco para a partição raiz.
+        # --- Disco --- #
         disco = psutil.disk_usage('/')
         uso_disco = disco.percent
         disco_total_b = int(disco.total)
         disco_usado_b = int(disco.used)
         disco_livre_b = int(disco.free)
-        io_atual = psutil.disk_io_counters()  # 2) pegar o atual
-        # 3) Fazer a diferença entre atual e anterior (em MB)
+
+        io_atual = psutil.disk_io_counters() #captura atual
+
+        # Taxa de transferência
         leitura_mb = float(io_atual.read_bytes - io_anterior.read_bytes) / (1024 * 1024)
         escrita_mb = float(io_atual.write_bytes - io_anterior.write_bytes) / (1024 * 1024)
         taxa_leitura = leitura_mb / INTERVALO_SEGUNDOS
         taxa_escrita = escrita_mb / INTERVALO_SEGUNDOS
-        io_anterior = io_atual #Atualiza o antigo para pegar na proxima captura
-        print(f"Leitura: {taxa_leitura:.2f} MB/s | Escrita: {taxa_escrita:.2f} MB/s")
+
+        # Latência média 
+        total_leitura = io_atual.read_count - io_anterior.read_count
+        tempo_leitura = io_atual.read_time - io_anterior.read_time
+        total_escrita = io_atual.write_count - io_anterior.write_count
+        tempo_escrita = io_atual.write_time - io_anterior.write_time
+
+        latencia_leitura = (tempo_leitura / total_leitura) if total_leitura > 0 else 0
+        latencia_escrita = (tempo_escrita / total_escrita) if total_escrita > 0 else 0
+
+        # Atualiza a captura anterior como a atual
+        io_anterior = io_atual
+
+
         
 
 
@@ -153,6 +167,8 @@ try:
                     'Disco livre (bytes)': round(disco_livre_b, 2),
                     'Taxa leitura (MB)': taxa_leitura,
                     'Taxa Escrita (MB)': taxa_escrita,
+                    "Latência leitura (ms)": latencia_leitura,
+                    'Latência escrita (ms)': latencia_escrita,
 
                     'Net bytes enviados': rede_enviada_b,
                     'Net bytes recebidos': rede_recebida_b,
