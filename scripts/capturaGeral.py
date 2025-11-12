@@ -79,6 +79,11 @@ def ping_perda_e_rtt(host="8.8.8.8", count=4):
 prev_rx = prev_tx = prev_prx = prev_ptx = None
 prev_t = None
 
+# Inicializa disco anterior e intervalo
+io_anterior = psutil.disk_io_counters()
+INTERVALO_SEGUNDOS = 2
+
+
 try:
     while True:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -89,13 +94,35 @@ try:
         mem_percent = mem.percent
         disk = psutil.disk_usage('/')
         disk_percent = disk.percent
+        
+        # --- Disco ---
+        io_atual = psutil.disk_io_counters()
 
-        # --- Rede (contadores acumulados) ---
+        # Taxa de transferência
+        leitura_mb = float(io_atual.read_bytes - io_anterior.read_bytes) / (1024 * 1024)
+        escrita_mb = float(io_atual.write_bytes - io_anterior.write_bytes) / (1024 * 1024)
+        taxa_leitura = leitura_mb / INTERVALO_SEGUNDOS
+        taxa_escrita = escrita_mb / INTERVALO_SEGUNDOS
+
+        # Latência média
+        total_leitura = io_atual.read_count - io_anterior.read_count
+        tempo_leitura = io_atual.read_time - io_anterior.read_time
+        total_escrita = io_atual.write_count - io_anterior.write_count
+        tempo_escrita = io_atual.write_time - io_anterior.write_time
+
+        latencia_leitura = (tempo_leitura / total_leitura) if total_leitura > 0 else 0
+        latencia_escrita = (tempo_escrita / total_escrita) if total_escrita > 0 else 0
+
+        # Atualiza o snapshot anterior
+        io_anterior = io_atual
+
+
+        # Rede 
         net_counters = psutil.net_io_counters()
         net_bytes_sent = int(net_counters.bytes_sent)
         net_bytes_recv = int(net_counters.bytes_recv)
 
-        # --- Rede (taxas por delta) ---
+        # Rede
         rx, tx, prx, ptx = obter_estatisticas_rede()
         agora = time.monotonic()
 
@@ -111,12 +138,52 @@ try:
 
         prev_rx, prev_tx, prev_prx, prev_ptx, prev_t = rx, tx, prx, ptx, agora
 
-        # --- Conexões e latência ---
+        # Conexões e latência
         tcp_established = conexoes_tcp_ativas()
         perda_pct, rtt_ms_ping = ping_perda_e_rtt()
         net_latency_ms = rtt_ms_ping if rtt_ms_ping is not None else latencia_tcp_ms()
 
-        # --------- ÚNICA LINHA POR COLETA (sem processos) ---------
+        # Coleta por processo
+        for proc in psutil.process_iter(['name', 'username', 'pid', 'memory_percent', 'num_threads', 'create_time','status']):
+            try:
+                info = proc.info
+                create_time_human = datetime.fromtimestamp(info.get('create_time')).strftime("%Y-%m-%d %H:%M:%S") \
+                                    if info.get('create_time') else ""
+                memory_human = bytes2human(proc.memory_info().rss)
+                cpu_usage = proc.cpu_percent(interval=0.1)
+
+                linhas.append({
+                    "Nome da Máquina": hostname,
+                    "Data da Coleta": timestamp,
+                    "Processo": info.get('name'),
+                    'Uso de CPU': cpu_percent,
+                    'Uso de RAM': mem_percent,
+                    'Uso de Disco': disk_percent,
+                    "Taxa leitura (MB/s)": taxa_leitura,
+                    "Taxa escrita (MB/s)": taxa_escrita,
+                    "Latência leitura (ms)": latencia_leitura,
+                    "Latência escrita (ms)": latencia_escrita,
+                    "Uso de Threads": info.get('num_threads'),
+                    "Quando foi iniciado": create_time_human,
+                    "Status": info.get('status'),
+                    #Rede
+                    "Net bytes enviados": net_bytes_sent,
+                    "Net bytes recebidos": net_bytes_recv,
+                    "Net Down (Mbps)": round(net_down_mbps, 2),
+                    "Net Up (Mbps)": round(net_up_mbps, 2),
+                    "Pacotes IN (intervalo)": pkts_in_interval,
+                    "Pacotes OUT (intervalo)": pkts_out_interval,
+                    "Conexões TCP ESTABLISHED": tcp_established if tcp_established is not None else "",
+                    "Latência (ms)": round(net_latency_ms, 1) if net_latency_ms is not None else "",
+                    "Perda de Pacotes (%)": round(perda_pct, 1) if perda_pct is not None else "",
+                })
+
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
+        # Salva CSV
+        df = pd.DataFrame(linhas)
+        # sem processos) 
         linha = {
             "Nome da Máquina": hostname,
             "Data da Coleta": timestamp,
@@ -142,7 +209,7 @@ try:
         else:
             df.to_csv(CSV_PATH, mode="w", sep=";", encoding="utf-8", index=False, header=True)
 
-        # --- S3 ---
+        # S3
         if S3_ENABLE:
             try:
                 destino = s3_chave_destino()

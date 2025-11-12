@@ -47,6 +47,8 @@ def obter_temperatura_cpu_c():
     return None
 
 
+
+
 try:
     while True:
         linhas = []
@@ -70,13 +72,14 @@ try:
         swap_total_b = int(swap.total)
         swap_usada_b = int(swap.used)
 
-        # Disco para a partição raiz.
+        # ------- Disco ------- #
         disco = psutil.disk_usage('/')
         uso_disco = disco.percent
         disco_total_b = int(disco.total)
         disco_usado_b = int(disco.used)
         disco_livre_b = int(disco.free)
 
+    
         # Estatísticas de rede acumuladas desde o boot.
         rede = psutil.net_io_counters()
         rede_enviada_b = int(rede.bytes_sent)
@@ -134,9 +137,8 @@ try:
 
                     'Uso de Disco': uso_disco,
                     'Disco total (bytes)': disco_total_b,
-                    'Disco usado (bytes)': disco_usado_b,
-                    'Disco livre (bytes)': disco_livre_b,
-
+                    'Disco usado (bytes)': round(disco_usado_b, 2),
+                    'Disco livre (bytes)': round(disco_livre_b, 2),
                     'Net bytes enviados': rede_enviada_b,
                     'Net bytes recebidos': rede_recebida_b,
 
