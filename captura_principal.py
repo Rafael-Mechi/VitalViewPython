@@ -99,9 +99,17 @@ def ping_perda_e_rtt(host="8.8.8.8", count=4):
 prev_rx = prev_tx = prev_prx = prev_ptx = None
 prev_t = None
 
+# Inicializa disco anterior e intervalo
+io_anterior = psutil.disk_io_counters()
+time.sleep(0.1) #delay
+tempo_io_anterior = time.monotonic()
+
 
 try:
     while True:
+        
+        inicio = time.monotonic()
+        
         linhas = []
 
         data_coleta = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -129,8 +137,31 @@ try:
         disco_total_b = int(disco.total)
         disco_usado_b = int(disco.used)
         disco_livre_b = int(disco.free)
+        io_atual = psutil.disk_io_counters()
+        tempo_io_atual = time.monotonic() # Marca o tempo atual
+        # Calcula o tempo real decorrido desde a última medição
+        dt_disco = max(1e-6, tempo_io_atual - tempo_io_anterior)
+        
+        # Taxa de transferência
+        leitura_mb = float(io_atual.read_bytes - io_anterior.read_bytes) / (1024 * 1024)
+        escrita_mb = float(io_atual.write_bytes - io_anterior.write_bytes) / (1024 * 1024)
+        taxa_leitura = leitura_mb / dt_disco
+        taxa_escrita = escrita_mb / dt_disco
+        # Latência média
+        total_leitura = io_atual.read_count - io_anterior.read_count
+        tempo_leitura = io_atual.read_time - io_anterior.read_time
+        total_escrita = io_atual.write_count - io_anterior.write_count
+        tempo_escrita = io_atual.write_time - io_anterior.write_time
 
-    
+        latencia_leitura = (tempo_leitura / total_leitura) if total_leitura > 0 else 0
+        latencia_escrita = (tempo_escrita / total_escrita) if total_escrita > 0 else 0
+
+        # Atualiza o captura anterior como a atual
+        io_anterior = io_atual
+        tempo_io_anterior = tempo_io_atual
+
+
+
         # Estatísticas de rede acumuladas desde o boot.
         rede = psutil.net_io_counters()
         rede_enviada_b = int(rede.bytes_sent)
@@ -217,6 +248,11 @@ try:
                     'Disco total (bytes)': disco_total_b,
                     'Disco usado (bytes)': round(disco_usado_b, 2),
                     'Disco livre (bytes)': round(disco_livre_b, 2),
+                    'Taxa leitura (MB/s)': taxa_leitura,
+                    "Taxa escrita (MB/s)": taxa_escrita,
+                    "Latência leitura (ms)": round(latencia_leitura, 6),
+                    "Latência escrita (ms)": round(latencia_escrita, 6),
+                    
                     #Rede
                     "Net bytes enviados": net_bytes_sent,
                     "Net bytes recebidos": net_bytes_recv,
@@ -258,7 +294,13 @@ try:
 
         s3.upload_file(arquivo_local, bucket, destino_s3)
         print("✅ Upload concluído com sucesso!")
-        time.sleep(INTERVALO_SEGUNDOS)
+        
+        # Garante intervalo fixo
+        fim = time.monotonic()
+        dt = fim - inicio
+        
+        if dt < INTERVALO_SEGUNDOS:
+            time.sleep(INTERVALO_SEGUNDOS - dt)
 
 except KeyboardInterrupt:
     print("Monitoramento finalizado.")
