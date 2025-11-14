@@ -18,7 +18,7 @@ CSV_PATH = "DadosRecebidos/captura_secundaria.csv"
 os.makedirs(DATA_PATH, exist_ok=True)
 
 S3_ENABLE = True
-S3_BUCKET = "bucket-raw-2025-10-23-9773"
+S3_BUCKET = "bucket-raw-2025-11-10-11512"
 S3_OBJECT = f"captura_secundaria.csv"
 s3 = boto3.client("s3")
 
@@ -205,7 +205,7 @@ try:
             end="\r", flush=True
         )
 
-        time.sleep(10)  # intervalo entre coletas
+        time.sleep(5)  # intervalo entre coletas
 
 except KeyboardInterrupt:
     print("\nMonitoramento finalizado.")

@@ -160,13 +160,6 @@ try:
         io_anterior = io_atual
         tempo_io_anterior = tempo_io_atual
 
-
-
-        # Estatísticas de rede acumuladas desde o boot.
-        rede = psutil.net_io_counters()
-        rede_enviada_b = int(rede.bytes_sent)
-        rede_recebida_b = int(rede.bytes_recv)
-
         # Rede 
         net_counters = psutil.net_io_counters()
         net_bytes_sent = int(net_counters.bytes_sent)
