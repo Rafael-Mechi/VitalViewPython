@@ -1,0 +1,2 @@
+Nome da Máquina;Data da Coleta;Uso de CPU (%);Uso de RAM (%);Uso de Disco (%);Net bytes enviados;Net bytes recebidos;Net Down (Mb/s);Net Up (Mb/s);Pacotes IN (intervalo);Pacotes OUT (intervalo);Conexões TCP ESTABLISHED;Latência (ms);Perda de Pacotes (%)
+DESKTOP-J1U1KVK;2025-11-13 21:44:28;10.1;85.6;65.7;72591503;463624544;0.0;0.0;0;0;33;22.3;0.0

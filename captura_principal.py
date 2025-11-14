@@ -8,17 +8,15 @@ import boto3
 
 
 # ------------------------ Configuração básica ------------------------ #
-CAMINHO_DADOS = "data"
-CAMINHO_CSV = "data/process_data.csv"
+DATA_PATH = "VitalViewPython/DadosRecebidos"
+CSV_PATH = "VitalViewPython/DadosRecebidos/captura_principal.csv"
 INTERVALO_SEGUNDOS = 2
-os.makedirs(CAMINHO_DADOS, exist_ok=True)
+os.makedirs(DATA_PATH, exist_ok=True)
 s3 = boto3.client('s3')
 
-
-bucket = "bucket-raw-2025-11-10-11512"
-arquivo_local = "data/process_data.csv"
-destino_s3 = "1_hsl.csv"
-
+bucket = "bucket-raw-2025-10-23-9773"
+arquivo_local = CSV_PATH
+destino_s3 = "captura_principal.csv"
 
 # -------------------------- Funções utilitárias -------------------------- #
 # Média de carga (load average): l1, l5, l15 indicam a média de tarefas
@@ -254,10 +252,10 @@ try:
                 continue
 
         df = pd.DataFrame(linhas)
-        if os.path.exists(CAMINHO_CSV):
-            df.to_csv(CAMINHO_CSV, mode="a", sep=";", encoding="utf-8", index=False, header=False)
+        if os.path.exists(CSV_PATH):
+            df.to_csv(CSV_PATH, mode="a", sep=";", encoding="utf-8", index=False, header=False)
         else:
-            df.to_csv(CAMINHO_CSV, mode="w", sep=";", encoding="utf-8", index=False, header=True)
+            df.to_csv(CSV_PATH, mode="w", sep=";", encoding="utf-8", index=False, header=True)
 
         s3.upload_file(arquivo_local, bucket, destino_s3)
         print("✅ Upload concluído com sucesso!")

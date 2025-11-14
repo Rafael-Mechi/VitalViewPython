@@ -13,13 +13,13 @@ from botocore.exceptions import BotoCoreError, ClientError
 # from slack_sdk.errors import SlackApiError
 # client = WebClient(token="Insira o Token aqui")
 
-DATA_PATH = "data"
-CSV_PATH = "data/process_data.csv"
+DATA_PATH = "VitalViewPython/DadosRecebidos"
+CSV_PATH = "VitalViewPython/DadosRecebidos/captura_secundaria.csv"
 os.makedirs(DATA_PATH, exist_ok=True)
 
 S3_ENABLE = True
-S3_BUCKET = "bucket-raw-2025-11-10-11512"
-S3_OBJECT = f"1_hsl.csv"
+S3_BUCKET = "bucket-raw-2025-10-23-9773"
+S3_OBJECT = f"captura_secundaria.csv"
 s3 = boto3.client("s3")
 
 def s3_chave_destino():
