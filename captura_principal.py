@@ -9,8 +9,8 @@ import boto3
 
 
 # ------------------------ Configuração básica ------------------------ #
-DATA_PATH = "VitalViewPython/DadosRecebidos"
-CSV_PATH = "VitalViewPython/DadosRecebidos/captura_principal.csv"
+DATA_PATH = "DadosRecebidos"
+CSV_PATH = "DadosRecebidos/captura_principal.csv"
 INTERVALO_SEGUNDOS = 2
 os.makedirs(DATA_PATH, exist_ok=True)
 s3 = boto3.client('s3')
@@ -183,7 +183,7 @@ try:
                 # Conversão do timestamp de criação do processo para string legível para as análises.
                 data_inicio_humana = (
                     datetime.fromtimestamp(dados.get('create_time')).strftime("%Y-%m-%d %H:%M:%S")
-                    if dados.get('create_time') else ""
+                    if dados.get('create_time') else "NA"
                 )
 
                 # Oneshot ativa um cache temporário dentro do with, fazendo com que a leitura fique mais rapido e consuma menos recursos.
@@ -242,8 +242,8 @@ try:
                     'RSS (bytes)': rss_bytes,
                     'IO Leitura (bytes)': leitura_bytes,
                     'IO Escrita (bytes)': escrita_bytes,
-                    "Quando foi iniciado": data_inicio_humana if data_inicio_humana is not None else 0,
-                    "Status": dados.get('status')
+                    "Quando foi iniciado": data_inicio_humana if data_inicio_humana is not None else "Não Iniciado",
+                    "Status": dados.get('status') if dados.get('status') is not None else "Stopped"
                 })
 
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):

@@ -13,8 +13,8 @@ from botocore.exceptions import BotoCoreError, ClientError
 # from slack_sdk.errors import SlackApiError
 # client = WebClient(token="Insira o Token aqui")
 
-DATA_PATH = "VitalViewPython/DadosRecebidos"
-CSV_PATH = "VitalViewPython/DadosRecebidos/captura_secundaria.csv"
+DATA_PATH = "DadosRecebidos"
+CSV_PATH = "DadosRecebidos/captura_secundaria.csv"
 os.makedirs(DATA_PATH, exist_ok=True)
 
 S3_ENABLE = True
