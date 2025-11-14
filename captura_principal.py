@@ -201,17 +201,17 @@ try:
                     "Data da Coleta": data_coleta,
 
                     'Uso de CPU': uso_cpu,
-                    'Load1': carga1,
-                    'Load5': carga5,
-                    'Load15': carga15,
+                    # 'Load1': carga1,
+                    # 'Load5': carga5,
+                    # 'Load15': carga15,
 
                     'Uso de RAM': uso_memoria,
                     'RAM total (bytes)': memoria_total_b,
                     'RAM usada (bytes)': memoria_usada_b,
 
-                    'Uso de Swap': uso_swap,
-                    'Swap total (bytes)': swap_total_b,
-                    'Swap usada (bytes)': swap_usada_b,
+                    # 'Uso de Swap': uso_swap,
+                    # 'Swap total (bytes)': swap_total_b,
+                    # 'Swap usada (bytes)': swap_usada_b,
 
                     'Uso de Disco': uso_disco,
                     'Disco total (bytes)': disco_total_b,
@@ -228,22 +228,22 @@ try:
                     "Latência (ms)": round(net_latency_ms, 1) if net_latency_ms is not None else 0,
                     "Perda de Pacotes (%)": round(perda_pct, 1) if perda_pct is not None else 0,
 
-                    'Freq CPU (MHz)': freq_cpu_mhz,
-                    'Temp CPU (C)': temp_cpu_c if temp_cpu_c is not None else 0, # condição que, dependendo da configuração, não consegue capturar temperatura
+                    # 'Freq CPU (MHz)': freq_cpu_mhz,
+                    # 'Temp CPU (C)': temp_cpu_c if temp_cpu_c is not None else 0, # condição que, dependendo da configuração, não consegue capturar temperatura
 
                     'Uptime (s)': uptime_segundos,
 
-                    "Processo": dados.get('name'),
-                    "PID": dados.get('pid'),
-                    "Usuario": dados.get('username'),
-                    'CPU proc (%)': cpu_proc_percent,
-                    'MEM proc (%)': dados.get('memory_percent'),
-                    'Threads': dados.get('num_threads'),
-                    'RSS (bytes)': rss_bytes,
-                    'IO Leitura (bytes)': leitura_bytes,
-                    'IO Escrita (bytes)': escrita_bytes,
-                    "Quando foi iniciado": data_inicio_humana if data_inicio_humana is not None else "Não Iniciado",
-                    "Status": dados.get('status') if dados.get('status') is not None else "Stopped"
+                    # "Processo": dados.get('name'),
+                    # "PID": dados.get('pid'),
+                    # "Usuario": dados.get('username'),
+                    # 'CPU proc (%)': cpu_proc_percent,
+                    # 'MEM proc (%)': dados.get('memory_percent'),
+                    # 'Threads': dados.get('num_threads'),
+                    # 'RSS (bytes)': rss_bytes,
+                    # 'IO Leitura (bytes)': leitura_bytes,
+                    # 'IO Escrita (bytes)': escrita_bytes,
+                    # "Quando foi iniciado": data_inicio_humana if data_inicio_humana is not None else "Não Iniciado",
+                    # "Status": dados.get('status') if dados.get('status') is not None else "Stopped"
                 })
 
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
