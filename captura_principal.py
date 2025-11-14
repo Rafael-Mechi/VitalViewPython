@@ -1,3 +1,4 @@
+import subprocess
 import psutil
 import pandas as pd
 import os
@@ -216,8 +217,6 @@ try:
                     'Disco total (bytes)': disco_total_b,
                     'Disco usado (bytes)': round(disco_usado_b, 2),
                     'Disco livre (bytes)': round(disco_livre_b, 2),
-                    'Net bytes enviados': rede_enviada_b,
-                    'Net bytes recebidos': rede_recebida_b,
                     #Rede
                     "Net bytes enviados": net_bytes_sent,
                     "Net bytes recebidos": net_bytes_recv,
