@@ -225,12 +225,12 @@ try:
                     "Net Up (Mbps)": round(net_up_mbps, 2),
                     "Pacotes IN (intervalo)": pkts_in_interval,
                     "Pacotes OUT (intervalo)": pkts_out_interval,
-                    "Conexões TCP ESTABLISHED": tcp_established if tcp_established is not None else "",
-                    "Latência (ms)": round(net_latency_ms, 1) if net_latency_ms is not None else "",
-                    "Perda de Pacotes (%)": round(perda_pct, 1) if perda_pct is not None else "",
+                    "Conexões TCP ESTABLISHED": tcp_established if tcp_established is not None else 0,
+                    "Latência (ms)": round(net_latency_ms, 1) if net_latency_ms is not None else 0,
+                    "Perda de Pacotes (%)": round(perda_pct, 1) if perda_pct is not None else 0,
 
                     'Freq CPU (MHz)': freq_cpu_mhz,
-                    'Temp CPU (C)': temp_cpu_c if temp_cpu_c is not None else "", # condição que, dependendo da configuração, não consegue capturar temperatura
+                    'Temp CPU (C)': temp_cpu_c if temp_cpu_c is not None else 0, # condição que, dependendo da configuração, não consegue capturar temperatura
 
                     'Uptime (s)': uptime_segundos,
 
@@ -243,7 +243,7 @@ try:
                     'RSS (bytes)': rss_bytes,
                     'IO Leitura (bytes)': leitura_bytes,
                     'IO Escrita (bytes)': escrita_bytes,
-                    "Quando foi iniciado": data_inicio_humana,
+                    "Quando foi iniciado": data_inicio_humana if data_inicio_humana is not None else 0,
                     "Status": dados.get('status')
                 })
 
