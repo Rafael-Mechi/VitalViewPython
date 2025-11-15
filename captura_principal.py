@@ -20,30 +20,6 @@ arquivo_local = CSV_PATH
 destino_s3 = "captura_principal.csv"
 
 # -------------------------- Funções utilitárias -------------------------- #
-# Média de carga (load average): l1, l5, l15 indicam a média de tarefas
-# prontas/executando (e em espera de I/O) nos últimos 1, 5 e 15 minutos.
-# É a média de quantas tarefas estão disputando memória dentro da CPU
-def carregar_media_carga():
-    try:
-        import os as _os
-        l1, l5, l15 = _os.getloadavg()
-        return l1, l5, l15
-    except Exception:
-        return 0.0, 0.0, 0.0
-
-
-def obter_temperatura_cpu_c():
-    try:
-        temperaturas = psutil.sensors_temperatures(fahrenheit=False)
-        for chave in ("coretemp", "cpu-thermal", "cpu_thermal"):
-            if chave in temperaturas and temperaturas[chave]:
-                return float(temperaturas[chave][0].current)
-        for leituras in temperaturas.values():
-            if leituras:
-                return float(leituras[0].current)
-    except Exception:
-        pass
-    return None
 
 # Rede 
 def obter_estatisticas_rede():
@@ -117,19 +93,12 @@ try:
 
         # ----------------------------- Métricas de host ----------------------------- #
         uso_cpu = psutil.cpu_percent(interval=1)
-        carga1, carga5, carga15 = carregar_media_carga()
-
+        
         # Memória principal.
         mem = psutil.virtual_memory()
         uso_memoria = mem.percent
         memoria_total_b = int(mem.total)
         memoria_usada_b = int(mem.used)
-
-        # Memória de swap.
-        swap = psutil.swap_memory()
-        uso_swap = swap.percent
-        swap_total_b = int(swap.total)
-        swap_usada_b = int(swap.used)
 
         # ------- Disco ------- #
         disco = psutil.disk_usage('/')
@@ -186,98 +155,51 @@ try:
         perda_pct, rtt_ms_ping = ping_perda_e_rtt()
         net_latency_ms = rtt_ms_ping if rtt_ms_ping is not None else latencia_tcp_ms()
 
-
-        # Frequência atual da CPU e temperatura aproximada.
-        freq_cpu = psutil.cpu_freq()
-        freq_cpu_mhz = float(freq_cpu.current) if freq_cpu else 0.0
-        temp_cpu_c = obter_temperatura_cpu_c()
-
         # Uptime do sistema.
         tempo_boot = psutil.boot_time()
         uptime_segundos = int(time.time() - tempo_boot)
 
-        # ----------------------------- Métricas de processos ----------------------------- #
-        # A leitura pode falhar caso o processo termine durante a coleta; Ignorei esses casos.
-        for processo in psutil.process_iter([
-            'name', 'username', 'pid', 'memory_percent', 'num_threads', 'create_time', 'status'
-        ]):
-            try:
-                dados = processo.info
+        # ----------------------------- CRIAÇÃO DA LINHA DE DADOS ----------------------------- #
+        
+        linha_dados = {
+            "Data_da_Coleta": data_coleta,
+            "Nome_da_Maquina": nome_maquina,
+            
+            # CPU
+            "Uso_de_Cpu": uso_cpu,
 
-                # Conversão do timestamp de criação do processo para string legível para as análises.
-                data_inicio_humana = (
-                    datetime.fromtimestamp(dados.get('create_time')).strftime("%Y-%m-%d %H:%M:%S")
-                    if dados.get('create_time') else "NA"
-                )
+            # Memória
+            "Uso_de_RAM": uso_memoria,
+            "RAM_total_(bytes)": memoria_total_b,
+            "RAM_usada_(bytes)": memoria_usada_b,
 
-                # Oneshot ativa um cache temporário dentro do with, fazendo com que a leitura fique mais rapido e consuma menos recursos.
-                with processo.oneshot():
-                    rss_bytes = int(processo.memory_info().rss) # Qtd de RAM que o processo ocupa
-                    # Amostragem curta para CPU por processo.
-                    cpu_proc_percent = processo.cpu_percent(interval=0.1)
-                    # Contadores de I/O quando disponíveis.
-                    io = processo.io_counters() if processo.is_running() else None
-                    leitura_bytes = int(io.read_bytes) if io else 0
-                    escrita_bytes = int(io.write_bytes) if io else 0
-
-                linhas.append({
-                    "Nome da Maquina": nome_maquina,
-                    "Data da Coleta": data_coleta,
-
-                    'Uso de CPU': uso_cpu,
-                    # 'Load1': carga1,
-                    # 'Load5': carga5,
-                    # 'Load15': carga15,
-
-                    'Uso de RAM': uso_memoria,
-                    'RAM total (bytes)': memoria_total_b,
-                    'RAM usada (bytes)': memoria_usada_b,
-
-                    # 'Uso de Swap': uso_swap,
-                    # 'Swap total (bytes)': swap_total_b,
-                    # 'Swap usada (bytes)': swap_usada_b,
-
-                    'Uso de Disco': uso_disco,
-                    'Disco total (bytes)': disco_total_b,
-                    'Disco usado (bytes)': round(disco_usado_b, 2),
-                    'Disco livre (bytes)': round(disco_livre_b, 2),
-                    'Taxa leitura (MB/s)': taxa_leitura,
-                    "Taxa escrita (MB/s)": taxa_escrita,
-                    "Latência leitura (ms)": round(latencia_leitura, 6),
-                    "Latência escrita (ms)": round(latencia_escrita, 6),
-                    
-                    #Rede
-                    "Net bytes enviados": net_bytes_sent,
-                    "Net bytes recebidos": net_bytes_recv,
-                    "Net Down (Mbps)": round(net_down_mbps, 2),
-                    "Net Up (Mbps)": round(net_up_mbps, 2),
-                    "Pacotes IN (intervalo)": pkts_in_interval,
-                    "Pacotes OUT (intervalo)": pkts_out_interval,
-                    "Conexões TCP ESTABLISHED": tcp_established if tcp_established is not None else 0,
-                    "Latência (ms)": round(net_latency_ms, 1) if net_latency_ms is not None else 0,
-                    "Perda de Pacotes (%)": round(perda_pct, 1) if perda_pct is not None else 0,
-
-                    # 'Freq CPU (MHz)': freq_cpu_mhz,
-                    # 'Temp CPU (C)': temp_cpu_c if temp_cpu_c is not None else 0, # condição que, dependendo da configuração, não consegue capturar temperatura
-
-                    'Uptime (s)': uptime_segundos,
-
-                    # "Processo": dados.get('name'),
-                    # "PID": dados.get('pid'),
-                    # "Usuario": dados.get('username'),
-                    # 'CPU proc (%)': cpu_proc_percent,
-                    # 'MEM proc (%)': dados.get('memory_percent'),
-                    # 'Threads': dados.get('num_threads'),
-                    # 'RSS (bytes)': rss_bytes,
-                    # 'IO Leitura (bytes)': leitura_bytes,
-                    # 'IO Escrita (bytes)': escrita_bytes,
-                    # "Quando foi iniciado": data_inicio_humana if data_inicio_humana is not None else "Não Iniciado",
-                    # "Status": dados.get('status') if dados.get('status') is not None else "Stopped"
-                })
-
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                # Pula um processo se não conseguir ler ou não tiver permissão.
-                continue
+            # Disco
+            "Uso_de_Disco": uso_disco,
+            "Disco_total_(bytes)": disco_total_b,
+            "Disco_usado_(bytes)": disco_usado_b,
+            "Disco_livre_(bytes)": disco_livre_b,
+            "Disco_taxa_leitura_mbs": taxa_leitura,
+            "Disco_taxa_escrita_mbs": taxa_escrita,
+            "Disco_latencia_leitura": latencia_leitura,
+            "Disco_latencia_escrita": latencia_escrita,
+            
+            # Rede
+            "Net_Down_(Mbps)": net_down_mbps,
+            "Net_Up_(Mbps)": net_up_mbps,
+            "Pacotes_IN_(intervalo)": pkts_in_interval,
+            "Pacotes_OUT_(intervalo)": pkts_out_interval,
+            "Latencia_(ms)": net_latency_ms,
+            "Perda_de_Pacotes_(%)": perda_pct,
+            "Conexões_TCP_ESTABLISHED": tcp_established,
+            "Net_bytes_enviados": net_bytes_sent,
+            "Net_bytes_recebidos": net_bytes_recv,
+            
+            # Sistema
+            "Uptime_(s)": uptime_segundos,
+        }
+        
+        # Adiciona a linha de dados coletados à lista que será usada para criar o DataFrame
+        linhas.append(linha_dados)
 
         df = pd.DataFrame(linhas)
         if os.path.exists(CSV_PATH):
@@ -285,7 +207,9 @@ try:
         else:
             df.to_csv(CSV_PATH, mode="w", sep=";", encoding="utf-8", index=False, header=True)
 
-        s3.upload_file(arquivo_local, bucket, destino_s3)
+        print("Processos capturados com sucesso!")
+
+        # s3.upload_file(arquivo_local, bucket, destino_s3)
         print("✅ Upload concluído com sucesso!")
         
         # Garante intervalo fixo
