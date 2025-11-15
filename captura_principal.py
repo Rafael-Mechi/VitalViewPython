@@ -7,17 +7,28 @@ import socket
 from datetime import datetime
 import boto3
 
+# ------------------------------------------------------------ #
+# 🚨 ATENÇÃO: ANTES DE EXECUTAR, CONFIGURE O nome_captura!    #
+# ------------------------------------------------------------ #
+#Ele deve seguir o formato:                                    #
+#     id_nomeServidor_nomeHospital   
+#                                                              #
+# Exemplo:                                                     #
+#     12_Server01_HospitalCentral                              #
+# ------------------------------------------------------------ #
 
 # ------------------------ Configuração básica ------------------------ #
-DATA_PATH = "DadosRecebidos"
-CSV_PATH = "DadosRecebidos/captura_principal.csv"
-INTERVALO_SEGUNDOS = 2
-os.makedirs(DATA_PATH, exist_ok=True)
-s3 = boto3.client('s3')
-
 bucket = "bucket-raw-2025-10-23-9773"
-arquivo_local = CSV_PATH
-destino_s3 = "captura_principal.csv"
+nome_captura = "captura_principal"
+contador = 0
+numArquivo = 0
+
+PASTA_ARQUIVO = "DadosRecebidos"
+NOME_CAPTURA = f"{nome_captura}_{numArquivo}.csv"
+LOCALIZACAO_CAPTURA = f"DadosRecebidos/{nome_captura}_{numArquivo}.csv"
+INTERVALO_SEGUNDOS = 1
+os.makedirs(PASTA_ARQUIVO, exist_ok=True)
+s3 = boto3.client('s3')
 
 # -------------------------- Funções utilitárias -------------------------- #
 
@@ -48,7 +59,7 @@ def latencia_tcp_ms(host="8.8.8.8", porta=53, timeout=1.5):
     except Exception:
         return None
 
-def ping_perda_e_rtt(host="8.8.8.8", count=4):
+def ping_perda_e_rtt(host="8.8.8.8", count=1):
     try:
     
         resultado = subprocess.run(["ping", host, "-n", str(count)], capture_output=True, text=True).stdout
@@ -92,7 +103,7 @@ try:
         nome_maquina = socket.gethostname()
 
         # ----------------------------- Métricas de host ----------------------------- #
-        uso_cpu = psutil.cpu_percent(interval=1)
+        uso_cpu = psutil.cpu_percent(interval=None)
         
         # Memória principal.
         mem = psutil.virtual_memory()
@@ -201,23 +212,39 @@ try:
         # Adiciona a linha de dados coletados à lista que será usada para criar o DataFrame
         linhas.append(linha_dados)
 
+        if(contador > 60):
+
+            # Troca o numero do arquivo
+            numArquivo += 1
+            print(f"Arquivo chegou até {contador - 1} linhas criando novo arquivo ")
+
+            try:
+                # Envia para o bucket
+                contador = 0
+                s3.upload_file(LOCALIZACAO_CAPTURA, bucket, NOME_CAPTURA)
+                LOCALIZACAO_CAPTURA = f"DadosRecebidos/{nome_captura}_{numArquivo}.csv"
+                print("✅ Enviado para o bucket")
+            except:
+                print("(Atenção) Arrume as credenciais da aws para conseguir envair para o bucket!")
+                break
+            
+
         df = pd.DataFrame(linhas)
-        if os.path.exists(CSV_PATH):
-            df.to_csv(CSV_PATH, mode="a", sep=";", encoding="utf-8", index=False, header=False)
+        if os.path.exists(LOCALIZACAO_CAPTURA):
+            df.to_csv(LOCALIZACAO_CAPTURA, mode="a", sep=";", encoding="utf-8", index=False, header=False)
         else:
-            df.to_csv(CSV_PATH, mode="w", sep=";", encoding="utf-8", index=False, header=True)
+            df.to_csv(LOCALIZACAO_CAPTURA, mode="w", sep=";", encoding="utf-8", index=False, header=True)
 
-        print("Processos capturados com sucesso!")
+        print(f"Captura {contador} registrada com sucesso!")
 
-        # s3.upload_file(arquivo_local, bucket, destino_s3)
-        print("✅ Upload concluído com sucesso!")
-        
         # Garante intervalo fixo
         fim = time.monotonic()
         dt = fim - inicio
         
-        if dt < INTERVALO_SEGUNDOS:
-            time.sleep(INTERVALO_SEGUNDOS - dt)
+        contador += 1
+
+        # if dt < INTERVALO_SEGUNDOS:
+        time.sleep(INTERVALO_SEGUNDOS)
 
 except KeyboardInterrupt:
     print("Monitoramento finalizado.")
