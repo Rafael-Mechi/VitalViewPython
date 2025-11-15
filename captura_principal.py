@@ -19,14 +19,15 @@ import boto3
 
 # ------------------------ Configuração básica ------------------------ #
 bucket = "bucket-raw-2025-10-23-9773"
-nome_captura = "captura_principal"
-contador = 0
+nome_captura = "id_servidor_nomeHospital"
 numArquivo = 0
+contador = 0
 
+
+INTERVALO_SEGUNDOS = 1
 PASTA_ARQUIVO = "DadosRecebidos"
 NOME_CAPTURA = f"{nome_captura}_{numArquivo}.csv"
 LOCALIZACAO_CAPTURA = f"DadosRecebidos/{nome_captura}_{numArquivo}.csv"
-INTERVALO_SEGUNDOS = 1
 os.makedirs(PASTA_ARQUIVO, exist_ok=True)
 s3 = boto3.client('s3')
 
@@ -223,6 +224,7 @@ try:
                 contador = 0
                 s3.upload_file(LOCALIZACAO_CAPTURA, bucket, NOME_CAPTURA)
                 LOCALIZACAO_CAPTURA = f"DadosRecebidos/{nome_captura}_{numArquivo}.csv"
+                NOME_CAPTURA = f"{nome_captura}_{numArquivo}.csv"
                 print("✅ Enviado para o bucket")
             except:
                 print("(Atenção) Arrume as credenciais da aws para conseguir envair para o bucket!")
