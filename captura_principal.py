@@ -184,15 +184,15 @@ try:
             "Disco_latencia_escrita": latencia_escrita,
             
             # Rede
+            "Net_bytes_enviados": net_bytes_sent,
+            "Net_bytes_recebidos": net_bytes_recv,
             "Net_Down_(Mbps)": net_down_mbps,
             "Net_Up_(Mbps)": net_up_mbps,
             "Pacotes_IN_(intervalo)": pkts_in_interval,
             "Pacotes_OUT_(intervalo)": pkts_out_interval,
+            "Conexões_TCP_ESTABLISHED": tcp_established,
             "Latencia_(ms)": net_latency_ms,
             "Perda_de_Pacotes_(%)": perda_pct,
-            "Conexões_TCP_ESTABLISHED": tcp_established,
-            "Net_bytes_enviados": net_bytes_sent,
-            "Net_bytes_recebidos": net_bytes_recv,
             
             # Sistema
             "Uptime_(s)": uptime_segundos,
