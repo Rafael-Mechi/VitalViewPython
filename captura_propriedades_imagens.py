@@ -5,11 +5,21 @@ import psutil
 from datetime import datetime
 import boto3
 import traceback
+import platform
 
 bucket = "s3-bucket-raw-11102025"
 s3 = boto3.client('s3')
 
-dir = '/home/meki/imagensTeste'
+sistemaOperacional = platform.system()
+usuario = os.getlogin()
+
+if sistemaOperacional == 'Linux':
+    dir = f"/home/{usuario}/imagensTeste"
+else:
+    dir = f"C:/Users/{usuario}/Documentos"
+
+print(dir)
+
 
 while True:
 
@@ -58,7 +68,7 @@ while True:
 
     df = pd.DataFrame(linhas)
 
-    caminho_csv = '/home/meki/VitalViewPython/1_srv1_hsl.csv'
+    caminho_csv = f"{dir}/1_srv1_hsl.csv"
     df.to_csv(caminho_csv, mode="w", sep=";", encoding="utf-8", index=False, header=True)
 
     try:
