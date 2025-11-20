@@ -53,11 +53,7 @@ while True:
         anos = round(diferenca / (60 * 60 * 24 * 365), 2)
 
         dados = {
-            "total_de_imagens": numeroArquivos,
-            "total_de_disco": totalDisco,
-            "uso_de_disco_da_imagem": paraGb,
-            "uso_de_disco_do_sistema": usoDisco,
-            "tamanho_medio_dos_arquivos": media,
+            "caminho_arquivo": caminho,
             "nome_arquivo": arq,
             "tamanho": round(os.path.getsize(caminho) / 1048576, 2),
             "data_geracao": somenteData,
