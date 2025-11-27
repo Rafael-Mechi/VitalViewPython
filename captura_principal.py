@@ -18,16 +18,16 @@ import boto3
 # ------------------------------------------------------------ #
 
 # ------------------------ Configuração básica ------------------------ #
-bucket = "bucket-raw-2025-10-23-9773"
-nome_captura = "id_servidor_nomeHospital"
+bucket = "bucket-raw-vw"
+nome_captura = "3_srv1_hsl_principal"
 numArquivo = 0
 contador = 0
 
 
 INTERVALO_SEGUNDOS = 1
 PASTA_ARQUIVO = "DadosRecebidos"
-NOME_CAPTURA = f"{nome_captura}_{numArquivo}.csv"
-LOCALIZACAO_CAPTURA = f"DadosRecebidos/{nome_captura}_{numArquivo}.csv"
+NOME_CAPTURA = f"{nome_captura}.csv"
+LOCALIZACAO_CAPTURA = f"DadosRecebidos/{nome_captura}.csv"
 os.makedirs(PASTA_ARQUIVO, exist_ok=True)
 s3 = boto3.client('s3')
 
@@ -213,7 +213,7 @@ try:
         # Adiciona a linha de dados coletados à lista que será usada para criar o DataFrame
         linhas.append(linha_dados)
 
-        if(contador > 60):
+        if(contador > 15):
 
             # Troca o numero do arquivo
             numArquivo += 1
@@ -223,8 +223,8 @@ try:
                 # Envia para o bucket
                 contador = 0
                 s3.upload_file(LOCALIZACAO_CAPTURA, bucket, NOME_CAPTURA)
-                LOCALIZACAO_CAPTURA = f"DadosRecebidos/{nome_captura}_{numArquivo}.csv"
-                NOME_CAPTURA = f"{nome_captura}_{numArquivo}.csv"
+                LOCALIZACAO_CAPTURA = f"DadosRecebidos/{nome_captura}.csv"
+                NOME_CAPTURA = f"{nome_captura}.csv"
                 print("✅ Enviado para o bucket")
             except:
                 print("(Atenção) Arrume as credenciais da aws para conseguir envair para o bucket!")

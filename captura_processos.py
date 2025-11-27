@@ -18,13 +18,13 @@ from botocore.exceptions import BotoCoreError, ClientError
 # Exemplo:                                                     #
 #     12_Server01_HospitalCentral                              #
 # ------------------------------------------------------------ #
-bucket = "raw-2011"
-nome_captura = "1_Servidor1_Siriolibanes"
+bucket = "bucket-raw-vw"
+nome_captura = "3_srv1_hsl"
 
 INTERVALO_SEGUNDOS = 60
 PASTA_ARQUIVO = "ProcessosRecebidos"
-NOME_CAPTURA = f"processos_{nome_captura}.csv"
-LOCALIZACAO_CAPTURA =  f"ProcessosRecebidos/processos_{nome_captura}.csv"
+NOME_CAPTURA = f"{nome_captura}_processos.csv"
+LOCALIZACAO_CAPTURA =  f"ProcessosRecebidos/{nome_captura}_processos.csv"
 os.makedirs(PASTA_ARQUIVO, exist_ok=True)
 s3 = boto3.client("s3")
 
@@ -62,7 +62,7 @@ try:
         # Aumenta o número do arquivo antes de criar o nome
 
         # Atualiza nomes
-        NOME_CAPTURA = f"processos_{nome_captura}.csv"
+        NOME_CAPTURA = f"{nome_captura}_processos.csv"
         LOCALIZACAO_CAPTURA = f"{PASTA_ARQUIVO}/{NOME_CAPTURA}"
 
         # Salva o CSV localmente
