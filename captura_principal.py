@@ -213,7 +213,7 @@ try:
         # Adiciona a linha de dados coletados à lista que será usada para criar o DataFrame
         linhas.append(linha_dados)
 
-        if(contador > 15):
+        if(contador > 60):
 
             # Troca o numero do arquivo
             numArquivo += 1
@@ -226,6 +226,8 @@ try:
                 LOCALIZACAO_CAPTURA = f"DadosRecebidos/{nome_captura}.csv"
                 NOME_CAPTURA = f"{nome_captura}.csv"
                 print("✅ Enviado para o bucket")
+                os.remove(LOCALIZACAO_CAPTURA)
+                print("🗑️ Arquivo local removido")
             except:
                 print("(Atenção) Arrume as credenciais da aws para conseguir envair para o bucket!")
                 break
