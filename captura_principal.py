@@ -24,7 +24,7 @@ numArquivo = 0
 contador = 0
 
 
-INTERVALO_SEGUNDOS = 1
+INTERVALO_SEGUNDOS = 3
 PASTA_ARQUIVO = "DadosRecebidos"
 NOME_CAPTURA = f"{nome_captura}.csv"
 LOCALIZACAO_CAPTURA = f"DadosRecebidos/{nome_captura}.csv"
@@ -213,7 +213,7 @@ try:
         # Adiciona a linha de dados coletados à lista que será usada para criar o DataFrame
         linhas.append(linha_dados)
 
-        if(contador > 60):
+        if(contador >= 1):
 
             # Troca o numero do arquivo
             numArquivo += 1
