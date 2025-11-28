@@ -20,11 +20,10 @@ import boto3
 # ------------------------ Configuração básica ------------------------ #
 bucket = "bucket-raw-vw"
 nome_captura = "3_srv1_hsl_principal"
-numArquivo = 0
 contador = 0
 
 
-INTERVALO_SEGUNDOS = 3
+INTERVALO_SEGUNDOS = 0.65
 PASTA_ARQUIVO = "DadosRecebidos"
 NOME_CAPTURA = f"{nome_captura}.csv"
 LOCALIZACAO_CAPTURA = f"DadosRecebidos/{nome_captura}.csv"
@@ -213,10 +212,8 @@ try:
         # Adiciona a linha de dados coletados à lista que será usada para criar o DataFrame
         linhas.append(linha_dados)
 
-        if(contador >= 1):
+        if(contador >= 4):
 
-            # Troca o numero do arquivo
-            numArquivo += 1
             print(f"Arquivo chegou até {contador - 1} linhas criando novo arquivo ")
 
             try:
