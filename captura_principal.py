@@ -19,7 +19,7 @@ import boto3
 
 # ------------------------ Configuração básica ------------------------ #
 bucket = "bucket-raw-vw"
-nome_captura = "3_srv1_hsl_principal"
+nome_captura = "3_srv1_Siriolibanes_principal"
 contador = 0
 
 
@@ -114,9 +114,9 @@ try:
         # ------- Disco ------- #
         disco = psutil.disk_usage('/')
         uso_disco = disco.percent
-        disco_total_b = int(disco.total)
-        disco_usado_b = int(disco.used)
-        disco_livre_b = int(disco.free)
+        disco_total_b = int(disco.total) / (1024 ** 3)
+        disco_usado_b = int(disco.used) / (1024 ** 3)
+        disco_livre_b = int(disco.free) / (1024 ** 3)
         io_atual = psutil.disk_io_counters()
         tempo_io_atual = time.monotonic() # Marca o tempo atual
         # Calcula o tempo real decorrido desde a última medição
