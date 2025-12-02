@@ -19,7 +19,7 @@ from botocore.exceptions import BotoCoreError, ClientError
 #     12_Server01_HospitalCentral                              #
 # ------------------------------------------------------------ #
 bucket = "bucket-raw-vw"
-nome_captura = "3_srv1_hsl"
+nome_captura = "1_srv1_hsl_processos"
 
 INTERVALO_SEGUNDOS = 60
 PASTA_ARQUIVO = "ProcessosRecebidos"

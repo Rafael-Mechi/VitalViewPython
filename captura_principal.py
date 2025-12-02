@@ -19,9 +19,10 @@ import boto3
 
 # ------------------------ Configuração básica ------------------------ #
 bucket = "bucket-raw-vw"
-nome_captura = "3_srv1_Siriolibanes_principal"
+nome_captura = "1_srv1_hsl_principal"
 contador = 0
-
+somaDisco = 0
+umGb = 0.2
 
 INTERVALO_SEGUNDOS = 0.65
 PASTA_ARQUIVO = "DadosRecebidos"
@@ -92,6 +93,7 @@ time.sleep(0.1) #delay
 tempo_io_anterior = time.monotonic()
 
 
+
 try:
     while True:
         
@@ -117,6 +119,17 @@ try:
         disco_total_b = int(disco.total) / (1024 ** 3)
         disco_usado_b = int(disco.used) / (1024 ** 3)
         disco_livre_b = int(disco.free) / (1024 ** 3)
+       # Limita o crescimento simulado
+        if somaDisco + umGb <= disco_total_b:
+            somaDisco += umGb
+            disco_usado_b += somaDisco
+            disco_livre_b = max(0, disco_total_b - disco_usado_b)
+        else:
+            # Se já chegou no limite, não cresce mais
+            disco_usado_b = disco_total_b
+            disco_livre_b = 0
+        print("Disco usado:", disco_usado_b)
+        print("Disco livre:", disco_livre_b)
         io_atual = psutil.disk_io_counters()
         tempo_io_atual = time.monotonic() # Marca o tempo atual
         # Calcula o tempo real decorrido desde a última medição
@@ -133,8 +146,9 @@ try:
         total_escrita = io_atual.write_count - io_anterior.write_count
         tempo_escrita = io_atual.write_time - io_anterior.write_time
 
-        latencia_leitura = (tempo_leitura / total_leitura) if total_leitura > 0 else 0
-        latencia_escrita = (tempo_escrita / total_escrita) if total_escrita > 0 else 0
+        latencia_leitura = (taxa_leitura + 0.1) * 5
+        latencia_escrita = (taxa_escrita + 0.1) * 5
+
 
         # Atualiza o captura anterior como a atual
         io_anterior = io_atual
